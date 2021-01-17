@@ -10,9 +10,9 @@
 
   let color = {
     0: "bg-gray-800",
-    1: "bg-red-500",
-    2: "bg-green-500",
-    3: "bg-blue-500"
+    1: "bg-red-600",
+    2: "bg-green-600",
+    3: "bg-blue-600"
   };
 
   let radioGroup = [];
