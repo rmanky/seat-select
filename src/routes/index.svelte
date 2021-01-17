@@ -1,5 +1,5 @@
 <script type="ts">
-  let name = "Meena";
+  let name = "Robear";
 
   enum SeatStatus {
     Empty,
