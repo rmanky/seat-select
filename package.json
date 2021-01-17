@@ -2,6 +2,7 @@
 	"name": "@rmanky/seat_select",
 	"version": "0.0.1",
 	"scripts": {
+		"deploy": "svelte-kit build && svelte-kit adapt",
 		"dev": "svelte-kit dev",
 		"build": "svelte-kit build",
 		"adapt": "svelte-kit adapt",
@@ -11,7 +12,7 @@
 		"@snowpack/plugin-build-script": "^2.1.0",
 		"@snowpack/plugin-postcss": "^1.1.0",
 		"@snowpack/plugin-typescript": "^1.0.0",
-		"@sveltejs/adapter-vercel": "next",
+		"@sveltejs/adapter-netlify": "next",
 		"@sveltejs/kit": "next",
 		"@sveltejs/snowpack-config": "next",
 		"autoprefixer": "^10.2.1",
