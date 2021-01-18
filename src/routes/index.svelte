@@ -1,66 +1,113 @@
-<script type="ts">
-  let name = "Robear";
+<script context="module">
+  let id;
+  export async function load({ page }) {
+    id = page.query.get("id");
+  }
+</script>
 
-  enum SeatStatus {
-    Empty,
-    Reserved,
-    Selected,
-    Confirmed
+<script type="ts">
+  import Session from "$components/Session.svelte";
+
+  let seats, selectedSeat, session, claimedSeat;
+
+  $: {
+    if (seats) {
+      const seat = seats.filter((seat) => seat.assignedTo === id)[0];
+      if (seat) {
+        claimedSeat = seat.seatNumber;
+      }
+      console.log(seats);
+    }
   }
 
-  let color = {
-    0: "bg-gray-800",
-    1: "bg-red-600",
-    2: "bg-green-600",
-    3: "bg-blue-600"
-  };
+  $: {
+    if (selectedSeat) {
+      const checkSelected = seats[selectedSeat - 1].assignedTo;
+      if (checkSelected != "" && checkSelected != id) {
+        selectedSeat = false;
+      }
+    }
+  }
 
   let radioGroup = [];
 
-  const seats = [];
-
-  [...Array(16).keys()].forEach((num) => {
-    seats.push({
-      seatNumber: num + 1,
-      status: SeatStatus.Empty,
-    });
-  });
-
-  seats[3].status = SeatStatus.Reserved;
-
-  function selectSeat(seatNum: number) {
-    seats.map((data) => {
-      if (data.status == SeatStatus.Selected) {
-        data.status = SeatStatus.Empty;
-      }
-    });
-
-    if (seats[seatNum - 1].status != SeatStatus.Reserved) {
-      seats[seatNum - 1].status = SeatStatus.Selected;
+  function attemptSelect(_seatNum) {
+    if (!seats[_seatNum - 1].assignedTo) {
+      selectedSeat = _seatNum;
     }
+  }
+
+  function claimSeat() {
+    session.claimSeat(selectedSeat, id);
+    selectedSeat = false;
+  }
+
+  function changeSeat() {
+    session.changeSeat(claimedSeat, selectedSeat, id);
+    selectedSeat = false;
   }
 </script>
 
 <div>
-  <h1 class="uppercase text-5xl font-extrabold mb-3">Seat Select</h1>
-  <div class="text-xl mb-4">
-    <p>Welcome, {name}!</p>
-    <p>Please select an <span class="font-bold">open</span> seat.</p>
-  </div>
-  <div class="grid grid-cols-2 gap-4 mb-4">
-    {#each seats as { seatNumber, status }}
-      <label class="{color[status]} p-3 rounded">
-        {seatNumber}
-        <input
-          type="radio"
-          class="appearance-none"
-          bind:group={radioGroup}
-          on:click={() => selectSeat(seatNumber)}
-        />
-      </label>
-    {/each}
-  </div>
-  <button>Confirm</button>
+  {#if id}
+    <Session bind:this={session} bind:seats />
+    <h1 class="uppercase text-5xl font-extrabold mb-3">Seat Select</h1>
+    <div class="text-xl mb-4">
+      {#if seats}
+        <p>~ {id} ~</p>
+        <p>Please <b>select</b> and <b>confirm</b> a seat.</p>
+      {:else}
+        <p>Hang tight, fetching seats...</p>
+      {/if}
+    </div>
+    {#if seats}
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div
+          class="col-span-2 p-3 rounded bg-gray-800 border-solid border-2 border-gray-700"
+        >Altar</div>
+
+        {#each seats as { seatNumber, assignedTo }}
+          <label
+            class="{assignedTo == ''
+              ? seatNumber == selectedSeat
+                ? 'bg-green-600'
+                : 'bg-gray-600'
+              : assignedTo == id
+              ? 'bg-blue-600'
+              : 'bg-red-600'} p-3 rounded cursor-pointer">
+            Seat #{seatNumber}
+            <input
+              type="radio"
+              class="appearance-none"
+              bind:group={radioGroup}
+              on:click={() => attemptSelect(seatNumber)}
+            />
+          </label>
+        {/each}
+      </div>
+      {#if claimedSeat && selectedSeat}
+        <button on:click={() => changeSeat()} class="bg-green-600"
+          >Change Seat</button
+        >
+      {:else if selectedSeat}
+        <button on:click={() => claimSeat()} class="bg-green-600"
+          >Confirm</button
+        >
+      {/if}
+      <a href="/admin" class="hidden" target="_blank">Admin Login</a>
+    {:else}
+      <i class="fas fa-spinner text-5xl animate-spin" />
+    {/if}
+  {:else}
+    <h1 class="uppercase text-5xl font-bold mb-3">Seat Select</h1>
+    <div class="bg-yellow-400 rounded text-black">
+      <p class="text-2xl">⚠⚠⚠</p>
+      <p class="text-xl">
+        This link appears to be invalid. There is no <b>id</b>!
+      </p>
+      <p class="text-2xl">⚠⚠⚠</p>
+    </div>
+  {/if}
 </div>
 
 <style lang="postcss">
