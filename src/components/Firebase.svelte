@@ -8,12 +8,6 @@
     const dispatch = createEventDispatcher();
 
     onMount(async () => {
-        const module = await import("https://cdn.skypack.dev/firebase/app");
-        await import("https://cdn.skypack.dev/@firebase/auth");
-        await import("https://cdn.skypack.dev/@firebase/firestore");
-
-        const firebase = module.default;
-
         if (!firebase.apps.length) {
             firebaseApp = firebase.initializeApp(firebaseConfig);
         } else {

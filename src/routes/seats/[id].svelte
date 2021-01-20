@@ -21,6 +21,7 @@
         const claimedSeats = seats.filter((data) => data.assignedTo === id);
         if (claimedSeats.length > 0) {
             claimedSeat = claimedSeats[0].seatNumber;
+            numPeople = claimedSeats[0].numberOfPeople;
         }
     }
 
@@ -49,10 +50,17 @@
     <div class="text-xl mb-4">
         {#if seats}
             <p>Welcome, {id}!</p>
-            <p>Please <b>select</b> the number of people attending, then <b>tap</b> and <b>confirm</b> a seat below</p>
+            <p>
+                Please <b>select</b> the number of people attending, then
+                <b>tap</b>
+                and <b>confirm</b> a seat below
+            </p>
             <div class="mt-2 bg-purple-800 p-5 rounded">
                 <label for="people">How many people?</label>
-                <select name="people" class="bg-pink-600" bind:value={numPeople}>
+                <select
+                    name="people"
+                    class="bg-pink-600"
+                    bind:value={numPeople}>
                     {#each [...Array(10).keys()].map((data) => data + 1) as question}
                         <option value={question}>
                             {#if question == 1}
@@ -76,7 +84,7 @@
                 class="col-span-2 p-3 rounded bg-gray-800 border-solid border-2 border-gray-700"
             >Altar</div>
 
-            {#each seats as { seatNumber, assignedTo }}
+            {#each seats as { seatNumber, assignedTo, numberOfPeople }}
                 <label
                     class="{assignedTo == ''
                         ? seatNumber == selectedSeat
@@ -85,7 +93,18 @@
                         : assignedTo == id
                         ? 'bg-blue-600'
                         : 'bg-red-600'} p-3 rounded cursor-pointer">
-                    Seat #{seatNumber}
+                    {#if assignedTo == id}
+                        Seat #{seatNumber} with
+                        {#if numberOfPeople == 1}
+                            {numberOfPeople} person
+                        {:else if numberOfPeople < 10}
+                            {numberOfPeople} people
+                        {:else}
+                            {numberOfPeople}+ people
+                        {/if}
+                    {:else}
+                        Seat #{seatNumber}
+                    {/if}
                     <input
                         type="radio"
                         class="appearance-none"
