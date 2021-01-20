@@ -27,6 +27,14 @@
 
     let radioGroup = [];
 
+    function updateNumPeople() {
+        const claimedSeats = seats.filter((data) => data.assignedTo === id);
+        if (claimedSeats.length > 0) {
+            claimedSeat = claimedSeats[0].seatNumber;
+            firestore.updateNumberOfPeople(claimedSeat, numPeople, id);
+        }
+    }
+
     function attemptSelect(_seatNum) {
         if (!seats[_seatNum - 1].assignedTo) {
             selectedSeat = _seatNum;
@@ -60,16 +68,13 @@
                 <select
                     name="people"
                     class="bg-pink-600"
-                    bind:value={numPeople}>
-                    {#each [...Array(10).keys()].map((data) => data + 1) as question}
+                    bind:value={numPeople}
+                    on:change={updateNumPeople}>
+                    {#each [...Array(8).keys()].map((data) => data + 1) as question}
                         <option value={question}>
-                            {#if question == 1}
-                                {question} Person
-                            {:else if question < 10}
-                                {question} People
-                            {:else}
-                                {question}+ People
-                            {/if}
+                            {question == 1
+                                ? `${question} Person`
+                                : `${question} People`}
                         </option>
                     {/each}
                 </select>
@@ -94,20 +99,15 @@
                         ? 'bg-blue-600'
                         : 'bg-red-600'} p-3 rounded cursor-pointer">
                     {#if assignedTo == id}
-                        Seat #{seatNumber} with
-                        {#if numberOfPeople == 1}
-                            {numberOfPeople} person
-                        {:else if numberOfPeople < 10}
-                            {numberOfPeople} people
-                        {:else}
-                            {numberOfPeople}+ people
-                        {/if}
+                        Seat #{seatNumber} with {numberOfPeople == 1
+                            ? `${numberOfPeople} person`
+                            : `${numberOfPeople} people`}
                     {:else}
                         Seat #{seatNumber}
                     {/if}
                     <input
                         type="radio"
-                        class="appearance-none"
+                        class="hidden"
                         bind:group={radioGroup}
                         on:click={() => attemptSelect(seatNumber)}
                     />

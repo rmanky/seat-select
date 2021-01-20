@@ -65,13 +65,9 @@
                         {#if assignedTo != ""}
                             <div class="bg-blue-600 p-3 rounded">
                                 Seat #{seatNumber} is assigned to {assignedTo} with
-                                {#if numberOfPeople == 1}
-                                    {numberOfPeople} person
-                                {:else if numberOfPeople < 10}
-                                    {numberOfPeople} people
-                                {:else}
-                                    {numberOfPeople}+ people
-                                {/if}
+                                {numberOfPeople == 1
+                                    ? `${numberOfPeople} person`
+                                    : `${numberOfPeople} people`}
                             </div>
                         {:else}
                             <div class="bg-gray-600 p-3 rounded">

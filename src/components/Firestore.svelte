@@ -24,7 +24,7 @@
 					seats.push({
 						seatNumber: seat.seatNumber,
 						assignedTo: seat.assignedTo,
-						numberOfPeople: seat.numberOfPeople
+						numberOfPeople: seat.numberOfPeople,
 					});
 				}
 				seats.sort((a, b) => a.seatNumber - b.seatNumber);
@@ -41,7 +41,7 @@
 					seats.push({
 						seatNumber: data[seat].seatNumber,
 						assignedTo: data[seat].assignedTo,
-						numberOfPeople: data[seat].numberOfPeople
+						numberOfPeople: data[seat].numberOfPeople,
 					});
 				}
 				seats.sort((a, b) => a.seatNumber - b.seatNumber);
@@ -49,12 +49,22 @@
 			});
 	}
 
+	export function updateNumberOfPeople(seatNumber, numPeople, id) {
+		const seat = {};
+		seat[`seat${seatNumber}`] = {
+			seatNumber,
+			assignedTo: id,
+			numberOfPeople: numPeople,
+		};
+		db.collection("churches").doc("vineyard").update(seat);
+	}
+
 	export function claimSeat(seatNumber, numPeople, id) {
 		const seat = {};
 		seat[`seat${seatNumber}`] = {
 			seatNumber,
 			assignedTo: id,
-			numPeople: numPeople
+			numberOfPeople: numPeople,
 		};
 		db.collection("churches").doc("vineyard").update(seat);
 	}
@@ -64,12 +74,12 @@
 		seat[`seat${newSeat}`] = {
 			seatNumber: newSeat,
 			assignedTo: id,
-			numberOfPeople: numPeople
+			numberOfPeople: numPeople,
 		};
 		seat[`seat${oldSeat}`] = {
 			seatNumber: oldSeat,
 			assignedTo: "",
-			numberOfPeople: 0
+			numberOfPeople: 0,
 		};
 		db.collection("churches").doc("vineyard").update(seat);
 	}
@@ -84,7 +94,7 @@
 			_seats[`seat${key + 1}`] = {
 				seatNumber: key + 1,
 				assignedTo: "",
-				numberOfPeople: 0
+				numberOfPeople: 0,
 			};
 		});
 
