@@ -65,6 +65,7 @@
             </p>
             <div class="mt-2 bg-purple-800 p-5 rounded">
                 <label for="people">How many people?</label>
+                <!-- svelte-ignore a11y-no-onchange -->
                 <select
                     name="people"
                     class="bg-pink-600"
