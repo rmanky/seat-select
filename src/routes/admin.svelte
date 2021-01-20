@@ -1,82 +1,35 @@
 <script>
-    import { onMount } from "svelte";
-    import Session from "$components/Session.svelte";
-    import Toast from "$components/Toast.svelte";
-    import firebaseConfig from "$components/config";
+    import Firebase from "$components/Firebase.svelte";
+    import Firestore from "$components/Firestore.svelte";
 
-    let user, userName, password, seats;
+    let user, userName, password, seats, firebase, firestore;
 
     let disabled = true;
-    let error = false;
 
-    let errorMessage = "An unknown error has occured";
+    function updateSeats(event) {
+        console.log(event.detail);
+        seats = event.detail;
+    }
 
-    onMount(() => {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+    async function login() {
+        const auth = await firebase.login(userName, password);
+        if (auth.message) {
+            console.log(auth.message);
         } else {
-            firebase.app(); // if already initialized, use that one
+            user = auth.user;
         }
-
-        disabled = false;
-    });
-
-    function login() {
-        firebase
-            .auth()
-            .signInWithEmailAndPassword(userName, password)
-            .then((_user) => {
-                userName = "";
-                password = "";
-                // Signed in
-                // ...
-                user = _user;
-            })
-            .catch((e) => {
-                errorMessage = e.message;
-                password = "";
-                error = true;
-                setTimeout(() => (error = false), 4000);
-            });
+        userName = "";
+        password = "";
     }
 
-    function signOut() {
-        firebase
-            .auth()
-            .signOut()
-            .then(() => {
-                user = false;
-            })
-            .catch((e) => {
-                // An error happened.
-                errorMessage = e.message;
-                error = true;
-                setTimeout(() => (error = false), 4000);
-            });
-    }
-
-    async function resetSeats() {
-        const db = firebase.firestore();
-
-        await db.collection("cities").doc("vineyard").delete();
-
-        const arr = [...Array(16).keys()];
-        const _seats = {};
-
-        arr.forEach((key) => {
-            _seats[`seat${key + 1}`] = {
-                seatNumber: key + 1,
-                assignedTo: "",
-            };
-        });
-
-        console.log(_seats);
-
-        db.collection("churches").doc("vineyard").set(_seats);
+    async function signOut() {
+        await firebase.signOut();
+        user = "";
     }
 </script>
 
 <div class="mx-auto flex flex-col justify-center items-center">
+    <Firebase bind:this={firebase} on:auth={() => (disabled = false)} />
     {#if !user}
         <input
             class="w-auto p-2 mb-6 bg-gray-800"
@@ -90,19 +43,16 @@
             placeholder="Password"
             bind:value={password}
         />
-        {#if disabled}
-            <i class="fas fa-spinner text-3xl animate-spin" />
-        {:else}
+        {#if !disabled}
             <div class="flex flex-row">
                 <a href="/" class="bg-blue-600 mr-6">Back</a>
                 <button on:click={login} class="bg-green-600">Login</button>
             </div>
-
-            {#if error}
-                <Toast show={error} message={errorMessage} />
-            {/if}
+        {:else}
+            <i class="animate-spin text-2xl fas fa-spinner" />
         {/if}
     {:else}
+        <Firestore bind:this={firestore} on:seats={updateSeats} />
         <div class="w-full">
             <h1 class="uppercase text-2xl font-extrabold mb-3">Admin Page</h1>
             <div class="grid grid-cols-2 gap-4 mb-4">
@@ -111,10 +61,17 @@
                 >Altar</div>
 
                 {#if seats}
-                    {#each seats as { seatNumber, assignedTo }}
+                    {#each seats as { seatNumber, assignedTo, numberOfPeople }}
                         {#if assignedTo != ""}
                             <div class="bg-blue-600 p-3 rounded">
-                                Seat #{seatNumber} is assigned to {assignedTo}
+                                Seat #{seatNumber} is assigned to {assignedTo} with
+                                {#if numberOfPeople == 1}
+                                    {numberOfPeople} person
+                                {:else if numberOfPeople < 10}
+                                    {numberOfPeople} people
+                                {:else}
+                                    {numberOfPeople}+ people
+                                {/if}
                             </div>
                         {:else}
                             <div class="bg-gray-600 p-3 rounded">
@@ -125,8 +82,9 @@
                 {:else}
                     <i class="fas fa-spinner text-5xl animate-spin" />
                 {/if}
-                <button on:click={resetSeats} class="col-span-2 bg-red-600"
-                    >Reset Seats</button
+                <button
+                    on:click={() => firestore.resetSeats()}
+                    class="col-span-2 bg-red-600">Reset Seats</button
                 >
             </div>
         </div>
@@ -135,7 +93,6 @@
             <a href="/" class="bg-blue-600 mr-6">Back</a>
             <button on:click={signOut} class="bg-purple-600">Sign Out</button>
         </div>
-        <Session bind:seats />
     {/if}
 </div>
 
