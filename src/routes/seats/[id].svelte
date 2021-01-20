@@ -61,7 +61,7 @@
             <p>
                 Please <b>select</b> the number of people attending, then
                 <b>tap</b>
-                and <b>confirm</b> a seat below
+                and <b>confirm</b> a seat below.
             </p>
             <div class="mt-2 bg-purple-800 p-5 rounded">
                 <label for="people">How many people?</label>
