@@ -29,8 +29,8 @@
             method: "POST",
             mode: "cors",
             headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
+                Accept: "text/plain",
+                "Content-Type": "text/plain",
             },
             body: JSON.stringify(payload),
         });

@@ -5,7 +5,7 @@ import https from 'https';
 
 export async function post(_req) {
     return new Promise((resolve, reject) => {
-        const data = JSON.stringify(_req.body);
+        const data = _req.body;
         console.log(_req);
         console.log(data);
         const options = {
