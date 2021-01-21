@@ -101,7 +101,7 @@
 
         <div class="flex flex-row gap-4">
             <a href="/" class="bg-blue-600">Back</a>
-            <a class="bg-green-600" href="/admin/sms">Send SMS</a>
+            <a class="bg-green-600" href="/admin/sms">Manage Users</a>
             <button on:click={signOut} class="bg-purple-600">Sign Out</button>
         </div>
     {/if}

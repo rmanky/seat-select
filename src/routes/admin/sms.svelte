@@ -40,7 +40,10 @@
                 {/if}
                 {#if name && number && match}
                     <button
-                        on:click={() => table.addContact(name, number)}
+                        on:click={() => {
+                            table.addContact(name, number);
+                            name = number = "";
+                        }}
                         class="py-2 bg-green-600">Add</button
                     >
                 {:else}
