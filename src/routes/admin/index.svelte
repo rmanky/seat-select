@@ -1,8 +1,9 @@
 <script>
     import Firebase from "$components/Firebase.svelte";
     import Firestore from "$components/Firestore.svelte";
+    import { user } from "$components/stores";
 
-    let user, userName, password, seats, firebase, firestore;
+    let userName, password, seats, firebase, firestore;
 
     let disabled = true;
 
@@ -15,8 +16,6 @@
         const auth = await firebase.login(userName, password);
         if (auth.message) {
             console.log(auth.message);
-        } else {
-            user = auth.user;
         }
         userName = "";
         password = "";
@@ -24,13 +23,21 @@
 
     async function signOut() {
         await firebase.signOut();
-        user = "";
+    }
+
+    async function getUser(id) {
+        const user = await firestore.getUser(id);
+        return user.name;
+    }
+
+    async function emptySeat(seatNum) {
+        await firestore.removeSeat(seatNum);
     }
 </script>
 
 <div class="mx-auto flex flex-col justify-center items-center">
     <Firebase bind:this={firebase} on:auth={() => (disabled = false)} />
-    {#if !user}
+    {#if !$user}
         <input
             class="w-auto p-2 mb-6 bg-gray-800"
             type="text"
@@ -63,11 +70,22 @@
                 {#if seats}
                     {#each seats as { seatNumber, assignedTo, numberOfPeople }}
                         {#if assignedTo != ""}
-                            <div class="bg-blue-600 p-3 rounded">
-                                Seat #{seatNumber} is assigned to {assignedTo} with
-                                {numberOfPeople == 1
-                                    ? `${numberOfPeople} person`
-                                    : `${numberOfPeople} people`}
+                            <div class="inline-flex flex-row gap-3 justify-center items-center bg-blue-600 p-3 rounded">
+                                <span>
+                                    Seat #{seatNumber} is assigned to {#await getUser(assignedTo)}
+                                        <p>...waiting</p>
+                                    {:then name}
+                                        <p>{name}</p>
+                                    {:catch error}
+                                        <p style="color: red">
+                                            ID {assignedTo}
+                                        </p>
+                                    {/await} with
+                                    {numberOfPeople == 1
+                                        ? `${numberOfPeople} person`
+                                        : `${numberOfPeople} people`}
+                                </span>
+                                <button class="bg-red-600" on:click={() => emptySeat(seatNumber)}> Delete </button>
                             </div>
                         {:else}
                             <div class="bg-gray-600 p-3 rounded">
@@ -85,8 +103,9 @@
             </div>
         </div>
 
-        <div class="flex flex-row">
-            <a href="/" class="bg-blue-600 mr-6">Back</a>
+        <div class="flex flex-row gap-4">
+            <a href="/" class="bg-blue-600">Back</a>
+            <a class="bg-green-600" href="/admin/sms">Send SMS</a>
             <button on:click={signOut} class="bg-purple-600">Sign Out</button>
         </div>
     {/if}

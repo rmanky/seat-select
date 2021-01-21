@@ -11,41 +11,72 @@
 		assignedTo: string;
 	}
 
-	function createDB(event) {
+	interface User {
+		name: string;
+		number: string;
+		id: string;
+	}
+
+	async function createDB(event) {
 		db = event.detail.db;
-		db.collection("churches")
-			.doc("vineyard")
+		db.collection("vineyard")
+			.doc("seats")
 			.get()
 			.then((doc) => doc.data())
 			.then((data: Seat[]) => {
 				let seat: any;
 				const seats = [];
 				for (seat in data) {
+					seats.push({ ...seat });
+				}
+				seats.sort((a, b) => a.seatNumber - b.seatNumber);
+				dispatch("seats", seats);
+			});
+
+		db.collection("vineyard")
+			.doc("seats")
+			.onSnapshot((doc) => {
+				const data: Seat[] = doc.data();
+				let seat: any;
+				const seats = [];
+				for (seat in data) {
+					const { seatNumber, assignedTo, numberOfPeople } = data[
+						seat
+					];
 					seats.push({
-						seatNumber: seat.seatNumber,
-						assignedTo: seat.assignedTo,
-						numberOfPeople: seat.numberOfPeople,
+						seatNumber,
+						assignedTo,
+						numberOfPeople,
 					});
 				}
 				seats.sort((a, b) => a.seatNumber - b.seatNumber);
 				dispatch("seats", seats);
 			});
 
-		db.collection("churches")
-			.doc("vineyard")
-			.onSnapshot((doc) => {
-				const data: Seat[] = doc.data();
-				let seat: any;
-				const seats = [];
-				for (seat in data) {
-					seats.push({
-						seatNumber: data[seat].seatNumber,
-						assignedTo: data[seat].assignedTo,
-						numberOfPeople: data[seat].numberOfPeople,
-					});
+		db.collection("vineyard")
+			.doc("seats")
+			.get()
+			.then((doc) => doc.data())
+			.then((data: User[]) => {
+				let user: any;
+				const users = [];
+				for (user in data) {
+					users.push({ ...user });
 				}
-				seats.sort((a, b) => a.seatNumber - b.seatNumber);
-				dispatch("seats", seats);
+				dispatch("users", users);
+			});
+
+		db.collection("vineyard")
+			.doc("users")
+			.onSnapshot((doc) => {
+				const data: User[] = doc.data();
+				let user: any;
+				const users = [];
+				for (user in data) {
+					const temp = data[user];
+					users.push({...temp});
+				}
+				dispatch("users", users);
 			});
 	}
 
@@ -56,7 +87,7 @@
 			assignedTo: id,
 			numberOfPeople: numPeople,
 		};
-		db.collection("churches").doc("vineyard").update(seat);
+		db.collection("vineyard").doc("seats").update(seat);
 	}
 
 	export function claimSeat(seatNumber, numPeople, id) {
@@ -66,7 +97,7 @@
 			assignedTo: id,
 			numberOfPeople: numPeople,
 		};
-		db.collection("churches").doc("vineyard").update(seat);
+		db.collection("vineyard").doc("seats").update(seat);
 	}
 
 	export function changeSeat(oldSeat, newSeat, numPeople, id) {
@@ -81,11 +112,11 @@
 			assignedTo: "",
 			numberOfPeople: 0,
 		};
-		db.collection("churches").doc("vineyard").update(seat);
+		db.collection("vineyard").doc("seats").update(seat);
 	}
 
 	export async function resetSeats() {
-		await db.collection("cities").doc("vineyard").delete();
+		await db.collection("vineyard").doc("seats").delete();
 
 		const arr = [...Array(16).keys()];
 		const _seats = {};
@@ -98,7 +129,54 @@
 			};
 		});
 
-		db.collection("churches").doc("vineyard").set(_seats);
+		db.collection("vineyard").doc("seats").set(_seats);
+	}
+
+	export async function removeSeat(seatNum) {
+		const seat = {};
+		seat[`seat${seatNum}`] = {
+			seatNumber: seatNum,
+			assignedTo: "",
+			numberOfPeople: 0,
+		};
+		db.collection("vineyard").doc("seats").update(seat);
+	}
+
+	export async function addPerson(contact) {
+		const existing = await db.collection("vineyard").doc("users").get();
+		const data = await existing.data();
+		const people = { ...data };
+		const id = db.collection("vineyard").doc().id;
+		contact.id = id;
+		people[`${id}`] = { ...contact };
+		db.collection("vineyard").doc("users").set(people);
+	}
+
+	export async function deletePerson(id) {
+		const existing = await db.collection("vineyard").doc("users").get();
+		const data = await existing.data();
+		const people = { ...data };
+		if (people[id]) {
+			delete people[id];
+		}
+		db.collection("vineyard").doc("users").set(people);
+	}
+
+	export async function getUser(id) {
+		const existing = await db.collection("vineyard").doc("users").get();
+		const data = await existing.data();
+		const people = { ...data };
+		return people[id];
+	}
+
+	export async function sentText(target) {
+		target.map(cont => cont.status++);
+		const people = {};
+		target.forEach(cont => {
+			people[cont.id] = {...cont};
+		});
+		console.log(people);
+		db.collection("vineyard").doc("users").update(people);
 	}
 </script>
 
