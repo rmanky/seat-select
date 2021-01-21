@@ -36,7 +36,7 @@
         });
 
         const body = await rawResponse.json();
-        if (body.status == "sucess") {
+        if (body.status == "success") {
             console.log(target);
             firestore.sentText(target);
         }

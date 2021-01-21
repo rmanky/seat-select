@@ -6,6 +6,7 @@ import https from 'https';
 export async function post(_req) {
     return new Promise((resolve, reject) => {
         const data = JSON.stringify(_req.body);
+        console.log(_req);
         console.log(data);
         const options = {
             hostname: 'send-sms-5601.twil.io',
@@ -30,7 +31,7 @@ export async function post(_req) {
                 resolve({
                     status: 200,
                     body: {
-                        status: 'sucess'
+                        status: 'success'
                     }
                 });
             });
