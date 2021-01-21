@@ -41,7 +41,7 @@ export async function post(_req) {
             reject({
                 status: 500,
                 body: {
-                    status: 'error'
+                    status: `${e.message}`
                 }
             });
         });
