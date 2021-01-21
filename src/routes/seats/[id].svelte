@@ -39,8 +39,7 @@
     }
 
     async function authUser() {
-        if (status == Status.WAITING) {
-            console.log("update");
+        if (status == Status.WAITING || status == Status.SUCCESS) {
             user = await firestore.getUser(pageID);
             if (!user) {
                 status = Status.FAILED;

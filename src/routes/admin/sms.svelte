@@ -2,7 +2,7 @@
     import { user } from "$components/stores";
     import Table from "$components/Table.svelte";
 
-    let name, number, match, table, contacts, remaining;
+    let name, number, match, table, contacts, sendEnabled;
 
     let matchCheck = /^\+[1-9]\d{1,14}$/;
 
@@ -11,18 +11,12 @@
             match = matchCheck.test(number);
         }
     }
-
-    $: {
-        if (contacts) {
-            remaining = contacts.filter((cont) => cont.status < 1).length > 0;
-        }
-    }
 </script>
 
 <div>
     {#if $user}
         <h1 class="text-2xl mb-3">Welcome, {$user.email}</h1>
-        <Table bind:this={table} bind:contacts />
+        <Table bind:this={table} bind:contacts={contacts} bind:sendEnabled={sendEnabled}/>
         {#if contacts}
             <div
                 class="inline-flex flex-wrap gap-3 mx-auto p-6 mb-3 bg-gray-800 rounded justify-center items-center"
@@ -44,7 +38,7 @@
                         Please enter a valid number (+13214567890)
                     </p>
                 {/if}
-                {#if name && number}
+                {#if name && number && match}
                     <button
                         on:click={() => table.addContact(name, number)}
                         class="py-2 bg-green-600">Add</button
@@ -59,13 +53,20 @@
 
             <div class="inline-flex gap-3">
                 <a href="/admin" class="bg-blue-600">Back</a>
-                {#if remaining}
+                {#if contacts && contacts.length > 0}
+                    <button on:click={() => table.randomizeAll()} class="bg-red-600">Invalidate All</button>
+                {:else}
+                    <button class="bg-red-600 opacity-50 cursor-default"
+                        >Invalidate All</button
+                    >
+                {/if}
+                {#if sendEnabled}
                     <button on:click={() => table.sendTo()} class="bg-green-600"
-                        >Send To Remaining</button
+                        >Send To Selected</button
                     >
                 {:else}
                     <button class="bg-green-600 opacity-50 cursor-default"
-                        >Send To Remaining</button
+                        >Send To Selected</button
                     >
                 {/if}
             </div>

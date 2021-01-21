@@ -5,8 +5,17 @@
 
     export let contacts;
 
+    export let sendEnabled;
+
+    let selected = [];
+
+    $: {
+        sendEnabled = selected.length > 0;
+    }
+
     function updateContacts(event) {
         contacts = event.detail;
+        selected = selected.filter(id => contacts.filter(i => i.id == id).length != 0);
     }
 
     export function addContact(name, number) {
@@ -20,25 +29,34 @@
         firestore.addPerson(newConact);
     }
 
+    export async function randomizeAll() {
+        await firestore.randomizeAll();
+    }
+
     export async function sendTo() {
-        const target = contacts.filter((contact) => contact.status < 1);
+        sendEnabled = false;
+        const target = contacts.filter((contact) => selected.includes(contact.id));
         const payload = {};
         payload["contacts"] = target;
 
-        const rawResponse = await fetch("https://cors-anywhere.herokuapp.com/https://send-sms-5601.twil.io/send-sms", {
-            method: "POST",
-            mode: "cors",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-        });
+        const rawResponse = await fetch(
+            "https://cors-anywhere.herokuapp.com/http://send-sms-5601.twil.io/send-sms",
+            {
+                method: "POST",
+                mode: "cors",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            }
+        );
 
         const body = await rawResponse.text();
-        if (body== "success") {
+        if (body == "success") {
             firestore.sentText(target);
         }
+        sendEnabled = true;
     }
 </script>
 
@@ -53,6 +71,7 @@
                     {#each contacts as _}
                         <tr
                             class="flex flex-col bg-gray-700 flex-no wrap sm:table-row rounded-l-xl sm:rounded-none mb-2 sm:mb-0">
+                            <th class="p-3 text-left">Select</th>
                             <th class="p-3 text-left border-gray-500">Name</th>
                             <th class="p-3 text-left">Number</th>
                             <th class="p-3 text-left">ID</th>
@@ -64,7 +83,19 @@
                 <tbody class="flex-1 sm:flex-none">
                     {#each contacts as { name, number, id, status }}
                         <tr
-                            class="flex flex-col bg-gray-800 sm:border-b-2 border-gray-600 rounded-r-xl flex-no wrap sm:table-row mb-2 sm:mb-0">
+                            class={`flex flex-col ${selected.includes(id) ? 'bg-blue-800' : 'bg-gray-800'} sm:border-b-2 border-gray-600 rounded-r-xl flex-no wrap sm:table-row mb-2 sm:mb-0`}>
+                            {#if selected.includes(id)}
+                                <button
+                                    class="m-0 p-3 rounded-none rounded-tr-xl sm:m-3 sm:rounded bg-yellow-600 text-left hover:font-medium cursor-pointer"
+                                    on:click={() => selected = selected.filter(i => i != id)}><i class="fas fa-minus"></i></button>
+                            {:else}
+                                <button
+                                    class="m-0 p-3 rounded-none rounded-tr-xl sm:m-3 sm:rounded bg-green-600 text-left hover:font-medium cursor-pointer"
+                                    on:click={() =>
+                                        (selected = [...selected, id])}>
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            {/if}
                             <td
                                 class="p-3 text-left sm:border-r-2 border-gray-600"
                                 >{name}</td

@@ -27,7 +27,7 @@
 				let seat: any;
 				const seats = [];
 				for (seat in data) {
-					seats.push({ ...seat });
+					seats.push(data[seat]);
 				}
 				seats.sort((a, b) => a.seatNumber - b.seatNumber);
 				dispatch("seats", seats);
@@ -54,15 +54,16 @@
 			});
 
 		db.collection("vineyard")
-			.doc("seats")
+			.doc("users")
 			.get()
 			.then((doc) => doc.data())
 			.then((data: User[]) => {
 				let user: any;
 				const users = [];
 				for (user in data) {
-					users.push({ ...user });
+					users.push(data[user]);
 				}
+				users.sort((a, b) => a.id.localeCompare(b.id));
 				dispatch("users", users);
 			});
 
@@ -74,9 +75,10 @@
 				const users = [];
 				for (user in data) {
 					const temp = data[user];
-					users.push({...temp});
+					users.push({ ...temp });
 				}
-				dispatch("users", users);
+				users.sort((a, b) => a.id.localeCompare(b.id));
+				dispatch("users", users);				
 			});
 	}
 
@@ -169,13 +171,26 @@
 		return people[id];
 	}
 
+	export async function randomizeAll() {
+		const existing = await db.collection("vineyard").doc("users").get();
+		const people = await existing.data();
+		for (let id in people) {
+			const temp = people[id];
+			delete people[id];
+			const newID = db.collection("vineyard").doc().id;
+			temp.id = newID;
+			temp.status = 0;
+			people[newID] = temp;
+		}
+		db.collection("vineyard").doc("users").set(people);
+	}
+
 	export async function sentText(target) {
-		target.map(cont => cont.status++);
+		target.map((cont) => cont.status++);
 		const people = {};
-		target.forEach(cont => {
-			people[cont.id] = {...cont};
+		target.forEach((cont) => {
+			people[cont.id] = { ...cont };
 		});
-		console.log(people);
 		db.collection("vineyard").doc("users").update(people);
 	}
 </script>

@@ -10,7 +10,6 @@
     onMount(async () => {
         const config = await import("$components/config");
         const firebaseConfig = await config.default();
-        console.log(firebaseConfig);
         if (!firebase.apps.length) {
             firebaseApp = firebase.initializeApp(firebaseConfig);
         } else {
@@ -20,8 +19,6 @@
         dispatch("firestore", {
             db: firebaseApp.firestore(),
         });
-
-        console.log("HERE");
 
         dispatch("auth");
     });

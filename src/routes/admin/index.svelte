@@ -8,15 +8,11 @@
     let disabled = true;
 
     function updateSeats(event) {
-        console.log(event.detail);
         seats = event.detail;
     }
 
     async function login() {
         const auth = await firebase.login(userName, password);
-        if (auth.message) {
-            console.log(auth.message);
-        }
         userName = "";
         password = "";
     }
