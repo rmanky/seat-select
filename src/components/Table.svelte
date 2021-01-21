@@ -25,19 +25,18 @@
         const payload = {};
         payload["contacts"] = target;
 
-        const rawResponse = await fetch("/sms", {
+        const rawResponse = await fetch("https://cors-anywhere.herokuapp.com/https://send-sms-5601.twil.io/send-sms", {
             method: "POST",
             mode: "cors",
             headers: {
-                Accept: "text/plain",
-                "Content-Type": "text/plain",
+                Accept: "application/json",
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(payload),
         });
 
-        const body = await rawResponse.json();
-        if (body.status == "success") {
-            console.log(target);
+        const body = await rawResponse.text();
+        if (body== "success") {
             firestore.sentText(target);
         }
     }
