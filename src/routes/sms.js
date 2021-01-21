@@ -4,7 +4,7 @@ dotenv.config();
 import https from 'https';
 
 export async function post(_req) {
-    return new Promise((resolve, reject) => {
+    const prom = new Promise((resolve, reject) => {
         const data = _req.body;
         console.log(_req);
         console.log(data);
@@ -50,4 +50,6 @@ export async function post(_req) {
         req.write(data);
         req.end();
     });
+
+    return prom;
 }
