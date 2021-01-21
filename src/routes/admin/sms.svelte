@@ -31,14 +31,12 @@
                     bind:value={name}
                     placeholder="Name"
                     class="bg-gray-900 pl-2 py-2"
-                    name="tel"
-                    type="tel"
+                    type="text"
                 />
                 <input
                     bind:value={number}
                     placeholder="Phone Number"
                     class="bg-gray-900 pl-2 py-2"
-                    name="tel"
                     type="tel"
                 />
                 {#if !match}
