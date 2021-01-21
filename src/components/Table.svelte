@@ -57,6 +57,7 @@
             console.log(err);
         }
 
+        firestore.sentText(target);
         selected = [];
     }
 </script>
