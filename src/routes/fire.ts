@@ -44,7 +44,7 @@ export async function get(req) {
 
 export async function post(req) {
     console.log(req.query.get("id"));
-    console.log(JSON.parse(req.body));
+    console.log(req);
     return {
         status: 200,
         body: {
