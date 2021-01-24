@@ -5,8 +5,8 @@
 
 	let db;
 
-	interface Seat {
-		seatNumber: number;
+	interface Row {
+		rowNumber: number;
 		numberOfPeople: number;
 		assignedTo: string;
 	}
@@ -20,37 +20,37 @@
 	async function createDB(event) {
 		db = event.detail.db;
 		db.collection("vineyard")
-			.doc("seats")
+			.doc("rows")
 			.get()
 			.then((doc) => doc.data())
-			.then((data: Seat[]) => {
-				let seat: any;
-				const seats = [];
-				for (seat in data) {
-					seats.push(data[seat]);
+			.then((data: Row[]) => {
+				let row: any;
+				const rows = [];
+				for (row in data) {
+					rows.push(data[row]);
 				}
-				seats.sort((a, b) => a.seatNumber - b.seatNumber);
-				dispatch("seats", seats);
+				rows.sort((a, b) => a.rowNumber - b.rowNumber);
+				dispatch("rows", rows);
 			});
 
 		db.collection("vineyard")
-			.doc("seats")
+			.doc("rows")
 			.onSnapshot((doc) => {
-				const data: Seat[] = doc.data();
-				let seat: any;
-				const seats = [];
-				for (seat in data) {
-					const { seatNumber, assignedTo, numberOfPeople } = data[
-						seat
+				const data: Row[] = doc.data();
+				let row: any;
+				const rows = [];
+				for (row in data) {
+					const { rowNumber, assignedTo, numberOfPeople } = data[
+						row
 					];
-					seats.push({
-						seatNumber,
+					rows.push({
+						rowNumber,
 						assignedTo,
 						numberOfPeople,
 					});
 				}
-				seats.sort((a, b) => a.seatNumber - b.seatNumber);
-				dispatch("seats", seats);
+				rows.sort((a, b) => a.rowNumber - b.rowNumber);
+				dispatch("rows", rows);
 			});
 
 		db.collection("vineyard")
@@ -82,66 +82,66 @@
 			});
 	}
 
-	export function updateNumberOfPeople(seatNumber, numPeople, id) {
-		const seat = {};
-		seat[`seat${seatNumber}`] = {
-			seatNumber,
+	export function updateNumberOfPeople(rowNumber, numPeople, id) {
+		const row = {};
+		row[`row${rowNumber}`] = {
+			rowNumber,
 			assignedTo: id,
 			numberOfPeople: numPeople,
 		};
-		db.collection("vineyard").doc("seats").update(seat);
+		db.collection("vineyard").doc("rows").update(row);
 	}
 
-	export function claimSeat(seatNumber, numPeople, id) {
-		const seat = {};
-		seat[`seat${seatNumber}`] = {
-			seatNumber,
+	export function claimRow(rowNumber, numPeople, id) {
+		const row = {};
+		row[`row${rowNumber}`] = {
+			rowNumber,
 			assignedTo: id,
 			numberOfPeople: numPeople,
 		};
-		db.collection("vineyard").doc("seats").update(seat);
+		db.collection("vineyard").doc("rows").update(row);
 	}
 
-	export function changeSeat(oldSeat, newSeat, numPeople, id) {
-		const seat = {};
-		seat[`seat${newSeat}`] = {
-			seatNumber: newSeat,
+	export function changeRow(oldRow, newRow, numPeople, id) {
+		const row = {};
+		row[`row${newRow}`] = {
+			rowNumber: newRow,
 			assignedTo: id,
 			numberOfPeople: numPeople,
 		};
-		seat[`seat${oldSeat}`] = {
-			seatNumber: oldSeat,
+		row[`row${oldRow}`] = {
+			rowNumber: oldRow,
 			assignedTo: "",
 			numberOfPeople: 0,
 		};
-		db.collection("vineyard").doc("seats").update(seat);
+		db.collection("vineyard").doc("rows").update(row);
 	}
 
-	export async function resetSeats() {
-		await db.collection("vineyard").doc("seats").delete();
+	export async function resetRows() {
+		await db.collection("vineyard").doc("rows").delete();
 
 		const arr = [...Array(16).keys()];
-		const _seats = {};
+		const _rows = {};
 
 		arr.forEach((key) => {
-			_seats[`seat${key + 1}`] = {
-				seatNumber: key + 1,
+			_rows[`row${key + 1}`] = {
+				rowNumber: key + 1,
 				assignedTo: "",
 				numberOfPeople: 0,
 			};
 		});
 
-		db.collection("vineyard").doc("seats").set(_seats);
+		db.collection("vineyard").doc("rows").set(_rows);
 	}
 
-	export async function removeSeat(seatNum) {
-		const seat = {};
-		seat[`seat${seatNum}`] = {
-			seatNumber: seatNum,
+	export async function removeRow(rowNum) {
+		const row = {};
+		row[`row${rowNum}`] = {
+			rowNumber: rowNum,
 			assignedTo: "",
 			numberOfPeople: 0,
 		};
-		db.collection("vineyard").doc("seats").update(seat);
+		db.collection("vineyard").doc("rows").update(row);
 	}
 
 	export async function addPerson(contact) {

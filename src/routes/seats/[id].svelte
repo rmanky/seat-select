@@ -9,7 +9,7 @@
 <script>
     import Firestore from "$components/Firestore.svelte";
 
-    let user, seats, selectedSeat, firestore, claimedSeat, numPeople;
+    let user, rows, selectedRow, firestore, claimedRow, numPeople;
 
     enum Status {
         SUCCESS,
@@ -19,22 +19,22 @@
 
     let status = Status.WAITING;
 
-    function updateSeats(event) {
-        seats = event.detail;
-        if (selectedSeat) {
-            const checkSelected = seats[selectedSeat - 1].assignedTo;
+    function updateRows(event) {
+        rows = event.detail;
+        if (selectedRow) {
+            const checkSelected = rows[selectedRow - 1].assignedTo;
             if (checkSelected != "" && checkSelected != user.id) {
-                selectedSeat = false;
+                selectedRow = false;
             }
         }
-        const claimedSeats = seats.filter(
+        const claimedRows = rows.filter(
             (data) => data.assignedTo === user.id
         );
-        if (claimedSeats.length > 0) {
-            claimedSeat = claimedSeats[0].seatNumber;
-            numPeople = claimedSeats[0].numberOfPeople;
+        if (claimedRows.length > 0) {
+            claimedRow = claimedRows[0].rowNumber;
+            numPeople = claimedRows[0].numberOfPeople;
         } else {
-            claimedSeat = undefined;
+            claimedRow = undefined;
         }
     }
 
@@ -52,29 +52,29 @@
     let radioGroup = [];
 
     function updateNumPeople() {
-        if (claimedSeat) {
-            firestore.updateNumberOfPeople(claimedSeat, numPeople, user.id);
+        if (claimedRow) {
+            firestore.updateNumberOfPeople(claimedRow, numPeople, user.id);
         }
     }
 
-    function attemptSelect(_seatNum) {
-        if (!seats[_seatNum - 1].assignedTo) {
-            selectedSeat = _seatNum;
+    function attemptSelect(_rowNum) {
+        if (!rows[_rowNum - 1].assignedTo) {
+            selectedRow = _rowNum;
         }
     }
 
-    function claimSeat() {
-        firestore.claimSeat(selectedSeat, numPeople, user.id);
-        selectedSeat = false;
+    function claimRow() {
+        firestore.claimRow(selectedRow, numPeople, user.id);
+        selectedRow = false;
     }
 
-    function changeSeat() {
-        firestore.changeSeat(claimedSeat, selectedSeat, numPeople, user.id);
-        selectedSeat = false;
+    function changeRow() {
+        firestore.changeRow(claimedRow, selectedRow, numPeople, user.id);
+        selectedRow = false;
     }
 
-    function removeSeat() {
-        firestore.removeSeat(claimedSeat);
+    function removeRow() {
+        firestore.removeRow(claimedRow);
     }
 </script>
 
@@ -88,15 +88,15 @@
             This URL has expired or is invalid!
         </h1>
     {:else}
-        <Firestore bind:this={firestore} on:seats={updateSeats} />
-        <h1 class="uppercase text-5xl font-extrabold mb-3">Seat Select</h1>
+        <Firestore bind:this={firestore} on:rows={updateRows} />
+        <h1 class="uppercase text-5xl font-extrabold mb-3">Row Select</h1>
         <div class="text-xl mb-4">
-            {#if seats}
+            {#if rows}
                 <p>Welcome, {user.name}!</p>
                 <p>
                     Please <b>select</b> the number of people attending, then
                     <b>tap</b>
-                    and <b>confirm</b> a seat below.
+                    and <b>confirm</b> a row below.
                 </p>
                 <div class="mt-2 bg-purple-800 p-5 rounded">
                     <label for="people">How many people?</label>
@@ -116,51 +116,51 @@
                     </select>
                 </div>
             {:else}
-                <p>Hang tight, fetching seats...</p>
+                <p>Hang tight, fetching rows...</p>
             {/if}
         </div>
-        {#if seats}
+        {#if rows}
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div
                     class="col-span-2 p-3 rounded bg-gray-800 border-solid border-2 border-gray-700"
                 >Altar</div>
 
-                {#each seats as { seatNumber, assignedTo, numberOfPeople }}
+                {#each rows as { rowNumber, assignedTo, numberOfPeople }}
                     <label
                         class="{assignedTo == ''
-                            ? seatNumber == selectedSeat
+                            ? rowNumber == selectedRow
                                 ? 'bg-green-600'
                                 : 'bg-gray-600'
                             : assignedTo == user.id
                             ? 'bg-blue-600'
                             : 'bg-red-600'} p-3 rounded cursor-pointer">
                         {#if assignedTo == user.id}
-                            Seat #{seatNumber} with {numberOfPeople == 1
+                            Row #{rowNumber} with {numberOfPeople == 1
                                 ? `${numberOfPeople} person`
                                 : `${numberOfPeople} people`}
                         {:else}
-                            Seat #{seatNumber}
+                            Row #{rowNumber}
                         {/if}
                         <input
                             type="radio"
                             class="hidden"
                             bind:group={radioGroup}
-                            on:click={() => attemptSelect(seatNumber)}
+                            on:click={() => attemptSelect(rowNumber)}
                         />
                     </label>
                 {/each}
             </div>
-            {#if claimedSeat}
-                <button on:click={() => removeSeat()} class="bg-red-600"
-                    >Cancel Seat</button
+            {#if claimedRow}
+                <button on:click={() => removeRow()} class="bg-red-600"
+                    >Cancel Row</button
                 >
             {/if}
-            {#if claimedSeat && selectedSeat}
-                <button on:click={() => changeSeat()} class="bg-green-600"
-                    >Change Seat</button
+            {#if claimedRow && selectedRow}
+                <button on:click={() => changeRow()} class="bg-green-600"
+                    >Change Row</button
                 >
-            {:else if selectedSeat}
-                <button on:click={() => claimSeat()} class="bg-green-600"
+            {:else if selectedRow}
+                <button on:click={() => claimRow()} class="bg-green-600"
                     >Confirm</button
                 >
             {/if}
